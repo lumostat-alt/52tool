@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>52 Tools Manager</title>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<style>
+/* ============================= DESIGN TOKENS ============================= */
+:root{
+  --bg:#f2f2f5;
+  --bg-elev:#ffffff;
+  --glass-bg:rgba(255,255,255,.62);
+  --glass-bg-strong:rgba(255,255,255,.82);
+  --glass-border:rgba(255,255,255,.95);
+  --glass-shadow:0 8px 32px rgba(31,38,52,.10), 0 1px 0 rgba(255,255,255,.6) inset;
+  --text-1:#1d1d1f;
+  --text-2:#6e6e73;
+  --text-3:#a1a1a6;
+  --hairline:rgba(60,60,67,.13);
+  --accent:#0a84ff;
+  --accent-2:#5e5ce6;
+  --accent-grad:linear-gradient(135deg,#5e9bff 0%,#7c6cf0 55%,#c86dd7 100%);
+  --danger:#ff453a;
+  --success:#30d158;
+  --warn:#ff9f0a;
+  --radius-lg:22px;
+  --radius-md:16px;
+  --radius-sm:10px;
+  --sb-w:230px;
+  color-scheme: light;
+}
+[data-theme="dark"]{
+  --bg:#000000;
+  --bg-elev:#151517;
+  --glass-bg:rgba(32,32,35,.58);
+  --glass-bg-strong:rgba(28,28,30,.86);
+  --glass-border:rgba(255,255,255,.09);
+  --glass-shadow:0 8px 32px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.05) inset;
+  --text-1:#f5f5f7;
+  --text-2:#a1a1a6;
+  --text-3:#6e6e73;
+  --hairline:rgba(255,255,255,.09);
+  color-scheme: dark;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter",system-ui,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--text-1);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  transition:background .4s ease,color .4s ease;
+}
+[data-theme="dark"] body::before{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(circle at 15% 8%, rgba(94,92,230,.16), transparent 42%),
+    radial-gradient(circle at 85% 15%, rgba(10,132,255,.12), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(191,90,242,.08), transparent 50%);
+}
+::selection{background:var(--accent);color:#fff;}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-thumb{background:var(--hairline);border-radius:8px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text-3);}
+button{font-family:inherit;}
+a{color:inherit;}
+button, input, textarea, select{outline:none;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
+
+/* ============================= LAYOUT ============================= */
+#root{height:100vh;position:relative;z-index:1;}
+.app{display:flex;height:100vh;}
+
+/* Sidebar */
+.sidebar{
+  width:var(--sb-w);flex:0 0 var(--sb-w);
+  padding:20px 14px;
+  display:flex;flex-direction:column;gap:4px;
+  background:var(--glass-bg);
+  backdrop-filter:blur(30px) saturate(180%);
+  -webkit-backdrop-filter:blur(30px) saturate(180%);
+  border-right:1px solid var(--hairline);
+  z-index:5;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:8px 10px 22px;}
+.brand-mark{
+  width:34px;height:34px;border-radius:10px;background:var(--accent-grad);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;
+  box-shadow:0 4px 14px rgba(94,92,230,.4);
+}
+.brand-text{display:flex;flex-direction:column;line-height:1.15;}
+.brand-text b{font-size:15px;letter-spacing:-.02em;}
+.brand-text span{font-size:11px;color:var(--text-2);}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;
+  font-size:13.5px;font-weight:500;color:var(--text-2);cursor:pointer;
+  transition:background .18s ease, color .18s ease, transform .15s ease;
+  user-select:none;
+}
+.nav-item .ic{width:18px;text-align:center;font-size:15px;opacity:.85;}
+.nav-item:hover{background:rgba(120,120,128,.12);color:var(--text-1);}
+.nav-item.active{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(10,132,255,.35);}
+.nav-item.active .ic{opacity:1;}
+.nav-sep{height:1px;background:var(--hairline);margin:10px 4px;}
+.nav-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);padding:10px 12px 4px;font-weight:600;}
+.sidebar-foot{margin-top:auto;padding-top:10px;}
+.theme-row{display:flex;gap:6px;background:rgba(120,120,128,.12);padding:4px;border-radius:11px;}
+.theme-btn{flex:1;padding:7px 0;border:none;background:transparent;border-radius:8px;font-size:12px;color:var(--text-2);cursor:pointer;transition:.15s;}
+.theme-btn.active{background:var(--bg-elev);color:var(--text-1);box-shadow:0 1px 4px rgba(0,0,0,.15);}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;}
+.topbar{
+  display:flex;align-items:center;gap:12px;padding:14px 26px;
+  background:var(--glass-bg);backdrop-filter:blur(26px) saturate(180%);-webkit-backdrop-filter:blur(26px) saturate(180%);
+  border-bottom:1px solid var(--hairline);z-index:4;
+}
+.page-title{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-right:6px;white-space:nowrap;}
+.search-wrap{
+  flex:1;max-width:420px;display:flex;align-items:center;gap:8px;
+  background:rgba(120,120,128,.14);border-radius:11px;padding:8px 12px;
+  color:var(--text-2);font-size:13.5px;transition:background .15s;
+}
+.search-wrap:focus-within{background:rgba(120,120,128,.22);}
+.search-wrap input{border:none;background:transparent;flex:1;font-size:13.5px;color:var(--text-1);}
+.kbd{font-size:10.5px;padding:2px 6px;border-radius:5px;background:var(--bg-elev);border:1px solid var(--hairline);color:var(--text-3);}
+.topbar-spacer{flex:1;}
+.icon-btn{
+  width:34px;height:34px;border-radius:10px;border:1px solid var(--hairline);background:var(--bg-elev);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;color:var(--text-2);
+  transition:transform .15s ease, box-shadow .15s ease, color .15s;
+}
+.icon-btn:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.1);color:var(--text-1);}
+.icon-btn:active{transform:scale(.94);}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:11px;border:none;
+  font-size:13.5px;font-weight:600;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease, opacity .15s;
+}
+.btn:active{transform:scale(.96);}
+.btn-primary{background:var(--accent-grad);color:#fff;box-shadow:0 6px 16px rgba(94,92,230,.35);}
+.btn-primary:hover{box-shadow:0 8px 20px rgba(94,92,230,.48);}
+.btn-ghost{background:rgba(120,120,128,.14);color:var(--text-1);}
+.btn-ghost:hover{background:rgba(120,120,128,.22);}
+.btn-danger{background:rgba(255,69,58,.12);color:var(--danger);}
+.btn-danger:hover{background:rgba(255,69,58,.2);}
+.btn-sm{padding:6px 11px;font-size:12.5px;border-radius:9px;}
+
+.content{flex:1;overflow-y:auto;padding:24px 28px 60px;}
+.view-fade{animation:fadeUp .35s cubic-bezier(.16,1,.3,1);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ============================= GLASS PANEL ============================= */
+.panel{
+  background:var(--glass-bg-strong);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--glass-shadow);
+  backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);
+}
+
+/* ============================= DASHBOARD ============================= */
+.stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px;}
+@media(max-width:1200px){.stat-grid{grid-template-columns:repeat(3,1fr);}}
+.stat-card{padding:16px 16px;border-radius:var(--radius-md);display:flex;flex-direction:column;gap:6px;transition:transform .2s ease;}
+.stat-card:hover{transform:translateY(-2px);}
+.stat-top{display:flex;align-items:center;justify-content:space-between;}
+.stat-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.stat-num{font-size:26px;font-weight:750;letter-spacing:-.03em;}
+.stat-label{font-size:11.5px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+
+.dash-row{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:1050px){.dash-row{grid-template-columns:1fr;}}
+.card{padding:20px;border-radius:var(--radius-lg);}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-h h3{margin:0;font-size:15px;font-weight:700;letter-spacing:-.01em;}
+.card-h span{font-size:12px;color:var(--text-2);}
+
+.ring-wrap{display:flex;align-items:center;gap:22px;}
+.ring-legend{display:flex;flex-direction:column;gap:8px;flex:1;}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-2);}
+.dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
+.legend-row b{color:var(--text-1);margin-left:auto;font-weight:650;}
+
+.timeline-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--hairline);}
+.timeline-item:last-child{border-bottom:none;}
+.tl-dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:0 0 auto;}
+.tl-text{font-size:13px;line-height:1.4;}
+.tl-time{font-size:11px;color:var(--text-3);}
+
+.upcoming-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--hairline);}
+.upcoming-item:last-child{border-bottom:none;}
+.up-date{width:44px;height:44px;border-radius:11px;background:rgba(120,120,128,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 auto;}
+.up-date b{font-size:15px;line-height:1;}
+.up-date span{font-size:9px;color:var(--text-2);text-transform:uppercase;}
+.up-name{font-size:13px;font-weight:600;}
+.up-cat{font-size:11px;color:var(--text-2);}
+
+.bar-chart{display:flex;flex-direction:column;gap:10px;}
+.bar-row{display:flex;align-items:center;gap:10px;}
+.bar-label{width:110px;font-size:12px;color:var(--text-2);flex:0 0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:9px;border-radius:6px;background:rgba(120,120,128,.14);overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;transition:width .5s cubic-bezier(.16,1,.3,1);}
+.bar-num{width:24px;text-align:right;font-size:11.5px;color:var(--text-2);font-weight:600;}
+
+/* ============================= PILLS / BADGES ============================= */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:650;letter-spacing:.01em;white-space:nowrap;}
+.pill .dot{width:6px;height:6px;}
+
+/* ============================= GRID VIEW (Tool cards) ============================= */
+.toolbar-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.chip{padding:6px 12px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--text-2);background:rgba(120,120,128,.12);cursor:pointer;border:1px solid transparent;transition:.15s;}
+.chip:hover{background:rgba(120,120,128,.2);}
+.chip.active{background:var(--accent);color:#fff;}
+.select-mini{padding:7px 10px;border-radius:9px;font-size:12.5px;background:rgba(120,120,128,.12);color:var(--text-1);border:1px solid transparent;cursor:pointer;}
+
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:16px;}
+.tcard{
+  padding:17px;border-radius:var(--radius-md);cursor:pointer;position:relative;
+  transition:transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s ease;
+  display:flex;flex-direction:column;gap:10px;
+}
+.tcard:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(20,20,30,.16);}
+.tcard-top{display:flex;align-items:flex-start;gap:10px;}
+.tcard-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 auto;}
+.tcard-title{font-size:14.5px;font-weight:700;letter-spacing:-.01em;line-height:1.25;}
+.tcard-cat{font-size:11.5px;color:var(--text-2);}
+.fav-star{margin-left:auto;background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-3);transition:.15s;}
+.fav-star.on{color:var(--warn);}
+.tcard-desc{font-size:12.5px;color:var(--text-2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px;}
+.tcard-progress-row{display:flex;align-items:center;gap:8px;}
+.mini-track{flex:1;height:6px;border-radius:4px;background:rgba(120,120,128,.15);overflow:hidden;}
+.mini-fill{height:100%;border-radius:4px;}
+.tcard-foot{display:flex;align-items:center;justify-content:space-between;margin-top:2px;}
+.tag-row{display:flex;gap:5px;flex-wrap:wrap;}
+.tag{font-size:10px;padding:2px 7px;border-radius:6px;background:rgba(120,120,128,.14);color:var(--text-2);font-weight:600;}
+.link-icons{display:flex;gap:6px;}
+.link-icons a{width:22px;height:22px;border-radius:6px;background:rgba(120,120,128,.12);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-2);text-decoration:none;}
+
+/* ============================= KANBAN ============================= */
+.kanban{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;height:100%;}
+.kcol{flex:0 0 280px;display:flex;flex-direction:column;border-radius:var(--radius-lg);background:rgba(120,120,128,.07);border:1px solid var(--hairline);max-height:100%;}
+.kcol.dragover{background:rgba(10,132,255,.09);border-color:var(--accent);}
+.kcol-head{display:flex;align-items:center;gap:8px;padding:14px 14px 10px;}
+.kcol-title{font-size:13px;font-weight:700;}
+.kcol-count{margin-left:auto;font-size:11px;color:var(--text-2);background:rgba(120,120,128,.15);padding:1px 8px;border-radius:10px;}
+.kcol-body{flex:1;overflow-y:auto;padding:0 10px 10px;display:flex;flex-direction:column;gap:9px;}
+.kcard{
+  padding:12px;border-radius:13px;cursor:grab;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.kcard:active{cursor:grabbing;}
+.kcard.dragging{opacity:.4;}
+.kcard:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.12);}
+.kcard-title{font-size:13px;font-weight:650;margin-bottom:6px;}
+.kcard-meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+
+/* ============================= TABLE ============================= */
+.tbl-wrap{border-radius:var(--radius-lg);overflow:hidden;}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+table.tbl th{
+  text-align:left;padding:11px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--text-2);border-bottom:1px solid var(--hairline);cursor:pointer;user-select:none;white-space:nowrap;
+  background:rgba(120,120,128,.06);
+}
+table.tbl th:hover{color:var(--text-1);}
+table.tbl td{padding:11px 14px;border-bottom:1px solid var(--hairline);vertical-align:middle;}
+table.tbl tr:last-child td{border-bottom:none;}
+table.tbl tbody tr{transition:background .12s;cursor:pointer;}
+table.tbl tbody tr:hover{background:rgba(120,120,128,.08);}
+.row-name{font-weight:650;}
+.row-sub{font-size:11px;color:var(--text-2);}
+
+/* ============================= CALENDAR ============================= */
+.cal-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.cal-dow{text-align:center;font-size:11px;color:var(--text-2);font-weight:650;padding-bottom:4px;}
+.cal-cell{min-height:88px;border-radius:12px;padding:8px;background:rgba(120,120,128,.06);border:1px solid transparent;display:flex;flex-direction:column;gap:4px;}
+.cal-cell.today{border-color:var(--accent);}
+.cal-cell.other{opacity:.35;}
+.cal-daynum{font-size:11.5px;font-weight:650;color:var(--text-2);}
+.cal-evt{font-size:10px;padding:2px 6px;border-radius:5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ============================= EMPTY STATE ============================= */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 20px;text-align:center;color:var(--text-2);}
+.empty .em-ic{font-size:38px;margin-bottom:14px;}
+.empty h4{margin:0 0 6px;color:var(--text-1);font-size:16px;}
+.empty p{margin:0 0 16px;font-size:13px;max-width:320px;}
+
+/* ============================= MODAL ============================= */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.34);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;z-index:50;
+  animation:overlayIn .2s ease;
+}
+@keyframes overlayIn{from{opacity:0;}to{opacity:1;}}
+.modal{
+  width:640px;max-width:92vw;max-height:88vh;display:flex;flex-direction:column;
+  background:var(--glass-bg-strong);border:1px solid var(--glass-border);border-radius:24px;
+  box-shadow:0 30px 80px rgba(0,0,0,.35);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+  animation:modalIn .28s cubic-bezier(.16,1,.3,1);
+}
+.modal.small{width:400px;}
+@keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+.modal-head{display:flex;align-items:center;gap:10px;padding:18px 22px;border-bottom:1px solid var(--hairline);}
+.modal-head h3{margin:0;font-size:16px;font-weight:700;}
+.modal-close{margin-left:auto;width:28px;height:28px;border-radius:8px;border:none;background:rgba(120,120,128,.15);color:var(--text-2);cursor:pointer;font-size:14px;}
+.modal-close:hover{background:rgba(120,120,128,.26);}
+.modal-tabs{display:flex;gap:4px;padding:10px 22px 0;border-bottom:1px solid var(--hairline);}
+.mtab{padding:9px 12px;font-size:12.5px;font-weight:650;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;}
+.mtab.active{color:var(--accent);border-color:var(--accent);}
+.modal-body{padding:20px 22px;overflow-y:auto;flex:1;}
+.modal-foot{display:flex;align-items:center;gap:10px;padding:16px 22px;border-top:1px solid var(--hairline);}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11.5px;font-weight:650;color:var(--text-2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;}
+.field input[type=text],.field input[type=url],.field input[type=date],.field input[type=number],.field textarea,.field select{
+  width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--hairline);
+  background:rgba(120,120,128,.08);color:var(--text-1);font-size:13.5px;font-family:inherit;
+  transition:border-color .15s, background .15s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent);background:var(--bg-elev);}
+.field textarea{resize:vertical;min-height:70px;line-height:1.5;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.emoji-pick{display:flex;flex-wrap:wrap;gap:6px;}
+.emoji-opt{width:32px;height:32px;border-radius:9px;background:rgba(120,120,128,.1);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;border:2px solid transparent;}
+.emoji-opt.sel{border-color:var(--accent);}
+.color-pick{display:flex;gap:8px;}
+.color-opt{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;}
+.color-opt.sel{border-color:var(--text-1);transform:scale(1.12);}
+.task-row{display:flex;align-items:center;gap:8px;padding:6px 0;}
+.task-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);}
+.task-row span{flex:1;font-size:13px;}
+.task-row span.done{text-decoration:line-through;color:var(--text-3);}
+.mini-x{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:13px;}
+.add-task-row{display:flex;gap:8px;margin-top:6px;}
+.add-task-row input{flex:1;}
+
+/* ============================= TOASTS ============================= */
+.toast-wrap{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:100;}
+.toast{
+  padding:12px 16px;border-radius:13px;background:var(--glass-bg-strong);border:1px solid var(--glass-border);
+  box-shadow:0 12px 28px rgba(0,0,0,.2);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px;min-width:220px;
+  animation:toastIn .3s cubic-bezier(.16,1,.3,1);
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}
+.toast .ic{font-size:15px;}
+
+/* Command palette */
+.cmdk{width:560px;max-width:90vw;}
+.cmdk input{width:100%;border:none;background:transparent;font-size:17px;padding:16px 20px;color:var(--text-1);}
+.cmdk-list{max-height:340px;overflow-y:auto;border-top:1px solid var(--hairline);padding:8px;}
+.cmdk-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13.5px;}
+.cmdk-item:hover,.cmdk-item.sel{background:rgba(10,132,255,.12);}
+.cmdk-item .ic{width:20px;text-align:center;}
+.cmdk-item .cat{margin-left:auto;font-size:11px;color:var(--text-3);}
+
+.shortcut-list{display:flex;flex-direction:column;gap:10px;}
+.sc-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;}
+.sc-keys{display:flex;gap:4px;}
+
+.progress-ring-svg{transform:rotate(-90deg);}
+.checkbox-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-1);}
+.checkbox-row input{width:16px;height:16px;accent-color:var(--accent);}
+
+@media(max-width:880px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .25s ease;}
+  .sidebar.open{transform:translateX(0);}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useMemo,useRef,useCallback} = React;
+
+/* =========================================================================
+   CONSTANTS
+========================================================================= */
+const STATUSES = [
+  {id:'idea', label:'Idea', color:'#8e8e93'},
+  {id:'researching', label:'Researching', color:'#64d2ff'},
+  {id:'designing', label:'Designing', color:'#bf5af2'},
+  {id:'ui-complete', label:'UI Complete', color:'#5e5ce6'},
+  {id:'developing', label:'Developing', color:'#0a84ff'},
+  {id:'testing', label:'Testing', color:'#ff9f0a'},
+  {id:'ready', label:'Ready to Launch', color:'#ffd60a'},
+  {id:'live', label:'Live', color:'#30d158'},
+  {id:'updating', label:'Updating', color:'#64d2ff'},
+  {id:'paused', label:'Paused', color:'#ff453a'},
+  {id:'archived', label:'Archived', color:'#636366'},
+];
+const STATUS_MAP = Object.fromEntries(STATUSES.map(s=>[s.id,s]));
+
+const KANBAN_COLS = [
+  {id:'ideas', label:'Ideas', statuses:['idea','researching'], defaultStatus:'idea'},
+  {id:'designing', label:'Designing', statuses:['designing','ui-complete'], defaultStatus:'designing'},
+  {id:'developing', label:'Developing', statuses:['developing'], defaultStatus:'developing'},
+  {id:'testing', label:'Testing', statuses:['testing'], defaultStatus:'testing'},
+  {id:'launching', label:'Launching', statuses:['ready','updating'], defaultStatus:'ready'},
+  {id:'live', label:'Live', statuses:['live','paused','archived'], defaultStatus:'live'},
+];
+
+const PRIORITIES = [
+  {id:'critical', label:'Critical', color:'#ff453a'},
+  {id:'high', label:'High', color:'#ff9f0a'},
+  {id:'medium', label:'Medium', color:'#ffd60a'},
+  {id:'low', label:'Low', color:'#64d2ff'},
+];
+const PRIORITY_MAP = Object.fromEntries(PRIORITIES.map(p=>[p.id,p]));
+
+const DIFFICULTIES = ['Trivial','Easy','Moderate','Hard','Very Hard'];
+
+const CATEGORIES = ['Productivity','Finance','Trading','Developer Tools','Design','AI / ML','Content',
+  'Marketing','Utilities','Social','Health','Education','E-commerce','Other'];
+
+const COLOR_LABELS = ['#ff453a','#ff9f0a','#ffd60a','#30d158','#64d2ff','#0a84ff','#5e5ce6','#bf5af2','#8e8e93'];
+
+const ICONS = ['🛠️','⚡️','📊','🧭','🧩','💡','🚀','🗂️','🧠','🎯','📈','🔧','🖥️','📱','🔗','🗓️','🧪','🔐','🎨','⌘'];
+
+const DB_NAME='tools52_db', DB_VERSION=1, STORE='tools';
+
+function uid(){ return 't_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); }
+function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+
+/* =========================================================================
+   INDEXEDDB LAYER
+========================================================================= */
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e)=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(STORE)){
+        db.createObjectStore(STORE, {keyPath:'id'});
+      }
+    };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function dbGetAll(){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(STORE,'readonly');
+    const store = tx.objectStore(STORE);
+    const req = store.getAll();
+    req.onsuccess = ()=>resolve(req.result || []);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function dbPut(tool){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(STORE,'readwrite');
+    tx.objectStore(STORE).put(tool);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function dbBulkPut(tools){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(STORE,'readwrite');
+    const store = tx.objectStore(STORE);
+    tools.forEach(t=>store.put(t));
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function dbDelete(id){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(STORE,'readwrite');
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function dbClear(){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(STORE,'readwrite');
+    tx.objectStore(STORE).clear();
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+
+/* =========================================================================
+   SEED DATA (first run only)
+========================================================================= */
+function seedTools(){
+  const mk = (o)=>({
+    id: uid(), description:'', category:'Utilities', priority:'medium', difficulty:'Moderate',
+    estimatedBuildTime:'', startDate:'', targetLaunchDate:'', actualLaunchDate:'', currentVersion:'v0.1',
+    notes:'', tags:[], favorite:false, colorLabel:COLOR_LABELS[0], icon:'🛠️',
+    websiteUrl:'', githubUrl:'', figmaUrl:'', claudeUrl:'', liveDemoUrl:'', appStoreUrl:'', playStoreUrl:'',
+    progress:0, tasks:[], milestones:[], createdAt:Date.now(), updatedAt:Date.now(),
+    ...o
+  });
+  return [
+    mk({name:'Focus Timeline Planner', description:'Apple-inspired daily planner with drag-and-drop timeline and focus timer.', category:'Productivity', status:'live', priority:'high', progress:100, icon:'🗓️', tags:['planner','apple-ui'], favorite:true, actualLaunchDate:todayISO()}),
+    mk({name:'Trade Journal Pro', description:'Manual trading journal with P&L analytics and screenshot tagging.', category:'Trading', status:'developing', priority:'critical', progress:62, icon:'📈', tags:['trading','journal']}),
+    mk({name:'Algo Signal Backtester', description:'Research-stage backtesting sandbox for algorithmic strategies.', category:'Trading', status:'researching', priority:'high', progress:18, icon:'🧪', tags:['algo']}),
+    mk({name:'YT Thumbnail Studio', description:'Quick thumbnail composer tuned for trading-channel branding.', category:'Content', status:'designing', priority:'medium', progress:35, icon:'🎨', tags:['youtube']}),
+    mk({name:'Invoice Flow', description:'B2B invoicing tool for handicrafts export orders.', category:'Finance', status:'testing', priority:'high', progress:80, icon:'🧾', tags:['b2b','handicrafts']}),
+    mk({name:'Habit Grid', description:'Minimal habit tracker with streaks and weekly review.', category:'Productivity', status:'idea', priority:'low', progress:4, icon:'✅'}),
+  ];
+}
+
+/* =========================================================================
+   SMALL UI PRIMITIVES
+========================================================================= */
+function Pill({color,label,dotOnly}){
+  return (
+    <span className="pill" style={{background:hexA(color,.14),color:color}}>
+      <span className="dot" style={{background:color}}></span>
+      {!dotOnly && label}
+    </span>
+  );
+}
+function hexA(hex,alpha){
+  const c = hex.replace('#','');
+  const r=parseInt(c.substring(0,2),16), g=parseInt(c.substring(2,4),16), b=parseInt(c.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function ProgressRing({percent,size=88,stroke=9,color='#0a84ff'}){
+  const r = (size-stroke)/2;
+  const c = 2*Math.PI*r;
+  const off = c - (percent/100)*c;
+  return (
+    <svg width={size} height={size} className="progress-ring-svg">
+      <circle cx={size/2} cy={size/2} r={r} stroke="var(--hairline)" strokeWidth={stroke} fill="none" />
+      <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none"
+        strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
+        style={{transition:'stroke-dashoffset .6s cubic-bezier(.16,1,.3,1)'}} />
+      <text x="50%" y="50%" dy="0.35em" textAnchor="middle" fill="var(--text-1)" fontSize={size*.2} fontWeight="700"
+        transform={`rotate(90 ${size/2} ${size/2})`}>{Math.round(percent)}%</text>
+    </svg>
+  );
+}
+
+function Toasts({toasts}){
+  return (
+    <div className="toast-wrap">
+      {toasts.map(t=>(
+        <div className="toast" key={t.id}>
+          <span className="ic">{t.icon||'✅'}</span>{t.msg}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* =========================================================================
+   TOOL CARD (grid view)
+========================================================================= */
+function ToolCard({tool, onOpen, onToggleFav}){
+  const st = STATUS_MAP[tool.status] || STATUSES[0];
+  const pr = PRIORITY_MAP[tool.priority] || PRIORITIES[2];
+  return (
+    <div className="panel tcard" onClick={()=>onOpen(tool)}>
+      <div className="tcard-top">
+        <div className="tcard-icon" style={{background:hexA(tool.colorLabel||'#0a84ff',.16)}}>{tool.icon||'🛠️'}</div>
+        <div style={{minWidth:0}}>
+          <div className="tcard-title">{tool.name}</div>
+          <div className="tcard-cat">{tool.category}</div>
+        </div>
+        <button className={"fav-star" + (tool.favorite?' on':'')} onClick={(e)=>{e.stopPropagation();onToggleFav(tool);}}>
+          {tool.favorite ? '★' : '☆'}
+        </button>
+      </div>
+      <div className="tcard-desc">{tool.description || 'No description yet.'}</div>
+      <div className="tcard-progress-row">
+        <div className="mini-track"><div className="mini-fill" style={{width:tool.progress+'%', background:st.color}}></div></div>
+        <span style={{fontSize:11,color:'var(--text-2)',fontWeight:650}}>{tool.progress}%</span>
+      </div>
+      <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+        <Pill color={st.color} label={st.label} />
+        <Pill color={pr.color} label={pr.label} />
+      </div>
+      <div className="tcard-foot">
+        <div className="tag-row">
+          {(tool.tags||[]).slice(0,3).map((t,i)=><span className="tag" key={i}>{t}</span>)}
+        </div>
+        <div className="link-icons">
+          {tool.githubUrl && <a href={tool.githubUrl} target="_blank" onClick={e=>e.stopPropagation()} title="GitHub">gh</a>}
+          {tool.liveDemoUrl && <a href={tool.liveDemoUrl} target="_blank" onClick={e=>e.stopPropagation()} title="Live Demo">🔗</a>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   DASHBOARD VIEW
+========================================================================= */
+function Dashboard({tools, onOpen}){
+  const total = tools.length;
+  const completed = tools.filter(t=>t.status==='live').length;
+  const inProgress = tools.filter(t=>['designing','ui-complete','developing','testing'].includes(t.status)).length;
+  const planned = tools.filter(t=>['idea','researching','ready'].includes(t.status)).length;
+  const paused = tools.filter(t=>t.status==='paused').length;
+  const archived = tools.filter(t=>t.status==='archived').length;
+  const pct = total ? Math.round((completed/total)*100) : 0;
+
+  const catCounts = {};
+  tools.forEach(t=>{ catCounts[t.category] = (catCounts[t.category]||0)+1; });
+  const catEntries = Object.entries(catCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const maxCat = Math.max(1,...catEntries.map(e=>e[1]));
+
+  const activity = [...tools].sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,6);
+
+  const upcoming = tools.filter(t=>t.targetLaunchDate && t.status!=='live' && t.status!=='archived')
+    .sort((a,b)=>new Date(a.targetLaunchDate)-new Date(b.targetLaunchDate)).slice(0,6);
+
+  const stats = [
+    {label:'Total Tools', num:total, icon:'📦', color:'#0a84ff'},
+    {label:'Completed', num:completed, icon:'✅', color:'#30d158'},
+    {label:'In Progress', num:inProgress, icon:'⚙️', color:'#ff9f0a'},
+    {label:'Planned', num:planned, icon:'💡', color:'#5e5ce6'},
+    {label:'Paused', num:paused, icon:'⏸️', color:'#ff453a'},
+    {label:'Archived', num:archived, icon:'🗄️', color:'#8e8e93'},
+  ];
+
+  return (
+    <div className="view-fade">
+      <div className="stat-grid">
+        {stats.map(s=>(
+          <div className="panel stat-card" key={s.label}>
+            <div className="stat-top">
+              <span className="stat-label">{s.label}</span>
+              <div className="stat-icon" style={{background:hexA(s.color,.15),color:s.color}}>{s.icon}</div>
+            </div>
+            <div className="stat-num">{s.num}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="dash-row">
+        <div className="panel card">
+          <div className="card-h"><h3>Completion Overview</h3><span>{completed} of {total} live</span></div>
+          <div className="ring-wrap">
+            <ProgressRing percent={pct} color="#30d158" />
+            <div className="ring-legend">
+              {STATUSES.filter(s=>tools.some(t=>t.status===s.id)).map(s=>{
+                const n = tools.filter(t=>t.status===s.id).length;
+                return (
+                  <div className="legend-row" key={s.id}>
+                    <span className="dot" style={{background:s.color}}></span>
+                    {s.label}
+                    <b>{n}</b>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="panel card">
+          <div className="card-h"><h3>Category Distribution</h3></div>
+          <div className="bar-chart">
+            {catEntries.length===0 && <span style={{fontSize:12,color:'var(--text-2)'}}>No tools yet.</span>}
+            {catEntries.map(([cat,count])=>(
+              <div className="bar-row" key={cat}>
+                <span className="bar-label">{cat}</span>
+                <div className="bar-track"><div className="bar-fill" style={{width:(count/maxCat*100)+'%', background:'var(--accent-grad)'}}></div></div>
+                <span className="bar-num">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="dash-row">
+        <div className="panel card">
+          <div className="card-h"><h3>Activity Timeline</h3><span>Recently updated</span></div>
+          {activity.length===0 && <span style={{fontSize:12,color:'var(--text-2)'}}>Nothing yet — add your first tool.</span>}
+          {activity.map(t=>{
+            const st = STATUS_MAP[t.status];
+            return (
+              <div className="timeline-item" key={t.id} onClick={()=>onOpen(t)} style={{cursor:'pointer'}}>
+                <span className="tl-dot" style={{background:st.color}}></span>
+                <div>
+                  <div className="tl-text"><b>{t.name}</b> moved to <span style={{color:st.color,fontWeight:650}}>{st.label}</span></div>
+                  <div className="tl-time">{new Date(t.updatedAt).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="panel card">
+          <div className="card-h"><h3>Upcoming Priorities</h3><span>By target launch</span></div>
+          {upcoming.length===0 && <span style={{fontSize:12,color:'var(--text-2)'}}>No upcoming launch dates set.</span>}
+          {upcoming.map(t=>{
+            const d = new Date(t.targetLaunchDate+'T00:00:00');
+            return (
+              <div className="upcoming-item" key={t.id} onClick={()=>onOpen(t)} style={{cursor:'pointer'}}>
+                <div className="up-date">
+                  <b>{d.getDate()}</b>
+                  <span>{d.toLocaleDateString(undefined,{month:'short'})}</span>
+                </div>
+                <div>
+                  <div className="up-name">{t.name}</div>
+                  <div className="up-cat">{t.category} · {PRIORITY_MAP[t.priority].label}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   KANBAN VIEW
+========================================================================= */
+function KanbanView({tools, onOpen, onStatusChange}){
+  const [dragId,setDragId] = useState(null);
+  const [overCol,setOverCol] = useState(null);
+
+  return (
+    <div className="view-fade kanban" style={{height:'calc(100vh - 172px)'}}>
+      {KANBAN_COLS.map(col=>{
+        const items = tools.filter(t=>col.statuses.includes(t.status));
+        return (
+          <div className={"kcol" + (overCol===col.id?' dragover':'')} key={col.id}
+            onDragOver={(e)=>{e.preventDefault(); setOverCol(col.id);}}
+            onDragLeave={()=>setOverCol(prev=>prev===col.id?null:prev)}
+            onDrop={(e)=>{
+              e.preventDefault();
+              if(dragId) onStatusChange(dragId, col.defaultStatus);
+              setDragId(null); setOverCol(null);
+            }}>
+            <div className="kcol-head">
+              <span className="kcol-title">{col.label}</span>
+              <span className="kcol-count">{items.length}</span>
+            </div>
+            <div className="kcol-body">
+              {items.map(t=>{
+                const pr = PRIORITY_MAP[t.priority];
+                const st = STATUS_MAP[t.status];
+                return (
+                  <div key={t.id} className={"panel kcard" + (dragId===t.id?' dragging':'')}
+                    draggable
+                    onDragStart={()=>setDragId(t.id)}
+                    onDragEnd={()=>{setDragId(null); setOverCol(null);}}
+                    onClick={()=>onOpen(t)}>
+                    <div style={{display:'flex',alignItems:'center',gap:7}}>
+                      <span style={{fontSize:15}}>{t.icon}</span>
+                      <span className="kcard-title" style={{marginBottom:0}}>{t.name}</span>
+                    </div>
+                    <div className="mini-track" style={{marginTop:8}}><div className="mini-fill" style={{width:t.progress+'%',background:st.color}}></div></div>
+                    <div className="kcard-meta">
+                      <Pill color={pr.color} label={pr.label} />
+                      <span style={{fontSize:11,color:'var(--text-2)'}}>{t.progress}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {items.length===0 && <div style={{fontSize:11.5,color:'var(--text-3)',textAlign:'center',padding:'14px 0'}}>Drop here</div>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* =========================================================================
+   TABLE VIEW
+========================================================================= */
+function TableView({tools, onOpen, onBulkDelete, onBulkStatus}){
+  const [sortKey,setSortKey] = useState('updatedAt');
+  const [sortDir,setSortDir] = useState('desc');
+  const [selected,setSelected] = useState([]);
+
+  const sorted = useMemo(()=>{
+    const arr = [...tools];
+    arr.sort((a,b)=>{
+      let av=a[sortKey], bv=b[sortKey];
+      if(sortKey==='priority'){ av=PRIORITIES.findIndex(p=>p.id===a.priority); bv=PRIORITIES.findIndex(p=>p.id===b.priority); }
+      if(typeof av==='string') av=av.toLowerCase();
+      if(typeof bv==='string') bv=bv.toLowerCase();
+      if(av<bv) return sortDir==='asc'?-1:1;
+      if(av>bv) return sortDir==='asc'?1:-1;
+      return 0;
+    });
+    return arr;
+  },[tools,sortKey,sortDir]);
+
+  function toggleSort(k){
+    if(sortKey===k) setSortDir(d=>d==='asc'?'desc':'asc');
+    else { setSortKey(k); setSortDir('asc'); }
+  }
+  function toggleSel(id){
+    setSelected(s=> s.includes(id) ? s.filter(x=>x!==id) : [...s,id]);
+  }
+  const cols = [
+    ['name','Name'],['category','Category'],['status','Status'],['priority','Priority'],
+    ['progress','Progress'],['targetLaunchDate','Target Launch'],['currentVersion','Version'],
+  ];
+
+  return (
+    <div className="view-fade">
+      {selected.length>0 && (
+        <div className="toolbar-row">
+          <span style={{fontSize:12.5,color:'var(--text-2)',fontWeight:650}}>{selected.length} selected</span>
+          <select className="select-mini" onChange={(e)=>{ if(e.target.value){ onBulkStatus(selected,e.target.value); setSelected([]);} e.target.value=''; }}>
+            <option value="">Set status…</option>
+            {STATUSES.map(s=><option value={s.id} key={s.id}>{s.label}</option>)}
+          </select>
+          <button className="btn btn-danger btn-sm" onClick={()=>{onBulkDelete(selected); setSelected([]);}}>Delete Selected</button>
+          <button className="btn btn-ghost btn-sm" onClick={()=>setSelected([])}>Clear</button>
+        </div>
+      )}
+      <div className="panel tbl-wrap">
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th style={{width:34}}><input type="checkbox" checked={selected.length===tools.length && tools.length>0}
+                onChange={(e)=>setSelected(e.target.checked ? tools.map(t=>t.id) : [])} /></th>
+              {cols.map(([k,label])=>(
+                <th key={k} onClick={()=>toggleSort(k)}>{label}{sortKey===k ? (sortDir==='asc'?' ↑':' ↓') : ''}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map(t=>{
+              const st = STATUS_MAP[t.status], pr = PRIORITY_MAP[t.priority];
+              return (
+                <tr key={t.id} onClick={()=>onOpen(t)}>
+                  <td onClick={(e)=>e.stopPropagation()}><input type="checkbox" checked={selected.includes(t.id)} onChange={()=>toggleSel(t.id)} /></td>
+                  <td><div className="row-name">{t.icon} {t.name}</div><div className="row-sub">{t.difficulty}</div></td>
+                  <td>{t.category}</td>
+                  <td><Pill color={st.color} label={st.label} /></td>
+                  <td><Pill color={pr.color} label={pr.label} /></td>
+                  <td style={{width:120}}>
+                    <div className="mini-track" style={{marginBottom:3}}><div className="mini-fill" style={{width:t.progress+'%',background:st.color}}></div></div>
+                    <span className="row-sub">{t.progress}%</span>
+                  </td>
+                  <td>{fmtDate(t.targetLaunchDate)}</td>
+                  <td>{t.currentVersion||'—'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {sorted.length===0 && <div className="empty"><div className="em-ic">🗂️</div><h4>No tools match</h4><p>Try clearing filters or search.</p></div>}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   CALENDAR VIEW
+========================================================================= */
+function CalendarView({tools, onOpen}){
+  const [cursor,setCursor] = useState(()=>{ const d=new Date(); d.setDate(1); return d; });
+  const year = cursor.getFullYear(), month = cursor.getMonth();
+  const first = new Date(year,month,1);
+  const startOffset = first.getDay();
+  const daysInMonth = new Date(year,month+1,0).getDate();
+  const prevDays = new Date(year,month,0).getDate();
+
+  const cells = [];
+  for(let i=0;i<startOffset;i++) cells.push({day:prevDays-startOffset+1+i, other:true});
+  for(let d=1; d<=daysInMonth; d++) cells.push({day:d, other:false});
+  while(cells.length % 7 !== 0) cells.push({day:cells.length,other:true});
+
+  function eventsFor(day, other){
+    if(other) return [];
+    const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    return tools.filter(t=> t.targetLaunchDate===iso || t.actualLaunchDate===iso || t.startDate===iso);
+  }
+  const todayStr = todayISO();
+
+  return (
+    <div className="view-fade">
+      <div className="cal-head">
+        <button className="icon-btn" onClick={()=>setCursor(new Date(year,month-1,1))}>‹</button>
+        <h3 style={{margin:0,fontSize:16,minWidth:170}}>{cursor.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h3>
+        <button className="icon-btn" onClick={()=>setCursor(new Date(year,month+1,1))}>›</button>
+        <button className="btn btn-ghost btn-sm" onClick={()=>setCursor(new Date())}>Today</button>
+      </div>
+      <div className="cal-grid">
+        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=><div className="cal-dow" key={d}>{d}</div>)}
+        {cells.map((c,i)=>{
+          const iso = !c.other ? `${year}-${String(month+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}` : null;
+          const evts = eventsFor(c.day,c.other);
+          return (
+            <div className={"cal-cell" + (c.other?' other':'') + (iso===todayStr?' today':'')} key={i}>
+              <span className="cal-daynum">{c.day}</span>
+              {evts.slice(0,3).map(t=>(
+                <div className="cal-evt" key={t.id} style={{background:STATUS_MAP[t.status].color}} onClick={()=>onOpen(t)} title={t.name}>{t.icon} {t.name}</div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   TOOL MODAL (Add / Edit)
+========================================================================= */
+const EMPTY_TOOL = {
+  name:'', description:'', category:CATEGORIES[0], status:'idea', priority:'medium', difficulty:'Moderate',
+  estimatedBuildTime:'', startDate:'', targetLaunchDate:'', actualLaunchDate:'', currentVersion:'',
+  notes:'', tags:[], favorite:false, colorLabel:COLOR_LABELS[5], icon:ICONS[0],
+  websiteUrl:'', githubUrl:'', figmaUrl:'', claudeUrl:'', liveDemoUrl:'', appStoreUrl:'', playStoreUrl:'',
+  progress:0, tasks:[], milestones:[],
+};
+
+function ToolModal({initial, onClose, onSave, onDelete}){
+  const isEdit = !!initial;
+  const [tab,setTab] = useState('basic');
+  const [form,setForm] = useState(()=> initial ? {...initial} : {...EMPTY_TOOL});
+  const [tagInput,setTagInput] = useState('');
+  const [taskInput,setTaskInput] = useState('');
+  const [confirmDel,setConfirmDel] = useState(false);
+  const nameRef = useRef(null);
+
+  useEffect(()=>{ setTimeout(()=>nameRef.current && nameRef.current.focus(),80); },[]);
+
+  function set(k,v){ setForm(f=>({...f,[k]:v})); }
+
+  function addTag(){
+    const v = tagInput.trim();
+    if(v && !form.tags.includes(v)){ set('tags',[...form.tags,v]); }
+    setTagInput('');
+  }
+  function addTask(){
+    const v = taskInput.trim();
+    if(!v) return;
+    set('tasks',[...form.tasks, {id:uid(), text:v, done:false}]);
+    setTaskInput('');
+  }
+  function toggleTask(id){
+    set('tasks', form.tasks.map(t=> t.id===id ? {...t,done:!t.done} : t));
+  }
+  function removeTask(id){ set('tasks', form.tasks.filter(t=>t.id!==id)); }
+  function removeTag(t){ set('tags', form.tags.filter(x=>x!==t)); }
+
+  function save(){
+    if(!form.name.trim()){ nameRef.current && nameRef.current.focus(); return; }
+    const now = Date.now();
+    const finalTool = {
+      ...form,
+      id: form.id || uid(),
+      createdAt: form.createdAt || now,
+      updatedAt: now,
+    };
+    onSave(finalTool);
+  }
+
+  const tabs = [['basic','Basic Info'],['status','Status & Progress'],['dates','Dates'],['links','Links'],['tasks','Tasks'],['notes','Notes']];
+
+  return (
+    <div className="overlay" onMouseDown={(e)=>{ if(e.target===e.currentTarget) onClose(); }}>
+      <div className="modal">
+        <div className="modal-head">
+          <span style={{fontSize:20}}>{form.icon}</span>
+          <h3>{isEdit ? 'Edit Tool' : 'Add New Tool'}</h3>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-tabs">
+          {tabs.map(([k,label])=>(
+            <div key={k} className={"mtab"+(tab===k?' active':'')} onClick={()=>setTab(k)}>{label}</div>
+          ))}
+        </div>
+        <div className="modal-body">
+          {tab==='basic' && (
+            <div>
+              <div className="field">
+                <label>Tool Name</label>
+                <input ref={nameRef} type="text" value={form.name} onChange={e=>set('name',e.target.value)} placeholder="e.g. Focus Timeline Planner" />
+              </div>
+              <div className="field">
+                <label>Short Description</label>
+                <textarea value={form.description} onChange={e=>set('description',e.target.value)} placeholder="One or two sentences describing the tool" />
+              </div>
+              <div className="field-row">
+                <div className="field">
+                  <label>Category</label>
+                  <select value={form.category} onChange={e=>set('category',e.target.value)}>
+                    {CATEGORIES.map(c=><option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="field">
+                  <label>Difficulty</label>
+                  <select value={form.difficulty} onChange={e=>set('difficulty',e.target.value)}>
+                    {DIFFICULTIES.map(c=><option key={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="field">
+                <label>Icon</label>
+                <div className="emoji-pick">
+                  {ICONS.map(ic=>(
+                    <div key={ic} className={"emoji-opt"+(form.icon===ic?' sel':'')} onClick={()=>set('icon',ic)}>{ic}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="field">
+                <label>Color Label</label>
+                <div className="color-pick">
+                  {COLOR_LABELS.map(c=>(
+                    <div key={c} className={"color-opt"+(form.colorLabel===c?' sel':'')} style={{background:c}} onClick={()=>set('colorLabel',c)}></div>
+                  ))}
+                </div>
+              </div>
+              <div className="field">
+                <label>Tags</label>
+                <div className="tag-row" style={{marginBottom:8}}>
+                  {form.tags.map(t=>(
+                    <span className="tag" key={t}>{t} <span style={{cursor:'pointer'}} onClick={()=>removeTag(t)}>✕</span></span>
+                  ))}
+                </div>
+                <div className="add-task-row">
+                  <input type="text" value={tagInput} onChange={e=>setTagInput(e.target.value)}
+                    onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addTag();}}} placeholder="Add a tag, press Enter" />
+                  <button className="btn btn-ghost btn-sm" onClick={addTag}>Add</button>
+                </div>
+              </div>
+              <div className="checkbox-row">
+                <input type="checkbox" checked={form.favorite} onChange={e=>set('favorite',e.target.checked)} />
+                <label style={{margin:0,textTransform:'none',fontWeight:500,color:'var(--text-1)'}}>Mark as favorite</label>
+              </div>
+            </div>
+          )}
+
+          {tab==='status' && (
+            <div>
+              <div className="field-row">
+                <div className="field">
+                  <label>Status</label>
+                  <select value={form.status} onChange={e=>set('status',e.target.value)}>
+                    {STATUSES.map(s=><option value={s.id} key={s.id}>{s.label}</option>)}
+                  </select>
+                </div>
+                <div className="field">
+                  <label>Priority</label>
+                  <select value={form.priority} onChange={e=>set('priority',e.target.value)}>
+                    {PRIORITIES.map(p=><option value={p.id} key={p.id}>{p.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="field">
+                <label>Progress — {form.progress}%</label>
+                <input type="range" min="0" max="100" value={form.progress} onChange={e=>set('progress',Number(e.target.value))} style={{width:'100%'}} />
+                <div className="mini-track" style={{marginTop:10}}><div className="mini-fill" style={{width:form.progress+'%', background:STATUS_MAP[form.status].color}}></div></div>
+              </div>
+              <div className="field">
+                <label>Estimated Build Time</label>
+                <input type="text" value={form.estimatedBuildTime} onChange={e=>set('estimatedBuildTime',e.target.value)} placeholder="e.g. 12 hours / 3 days" />
+              </div>
+              <div className="field">
+                <label>Current Version</label>
+                <input type="text" value={form.currentVersion} onChange={e=>set('currentVersion',e.target.value)} placeholder="v1.0.0" />
+              </div>
+            </div>
+          )}
+
+          {tab==='dates' && (
+            <div>
+              <div className="field">
+                <label>Start Date</label>
+                <input type="date" value={form.startDate} onChange={e=>set('startDate',e.target.value)} />
+              </div>
+              <div className="field-row">
+                <div className="field">
+                  <label>Target Launch Date</label>
+                  <input type="date" value={form.targetLaunchDate} onChange={e=>set('targetLaunchDate',e.target.value)} />
+                </div>
+                <div className="field">
+                  <label>Actual Launch Date</label>
+                  <input type="date" value={form.actualLaunchDate} onChange={e=>set('actualLaunchDate',e.target.value)} />
+                </div>
+              </div>
+              <div className="field">
+                <label>Milestones</label>
+                {form.milestones.map(m=>(
+                  <div className="task-row" key={m.id}>
+                    <input type="checkbox" checked={m.done} onChange={()=>set('milestones', form.milestones.map(x=>x.id===m.id?{...x,done:!x.done}:x))} />
+                    <span className={m.done?'done':''}>{m.text}</span>
+                    <button className="mini-x" onClick={()=>set('milestones', form.milestones.filter(x=>x.id!==m.id))}>✕</button>
+                  </div>
+                ))}
+                <div className="add-task-row">
+                  <input type="text" placeholder="Add milestone, press Enter" onKeyDown={e=>{
+                    if(e.key==='Enter' && e.target.value.trim()){
+                      set('milestones',[...form.milestones,{id:uid(),text:e.target.value.trim(),done:false}]);
+                      e.target.value='';
+                    }
+                  }} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab==='links' && (
+            <div>
+              {[['websiteUrl','Website URL'],['githubUrl','GitHub URL'],['figmaUrl','Figma URL'],
+                ['claudeUrl','Claude Conversation Link'],['liveDemoUrl','Live Demo'],
+                ['appStoreUrl','App Store Link'],['playStoreUrl','Play Store Link']].map(([k,label])=>(
+                <div className="field" key={k}>
+                  <label>{label}</label>
+                  <input type="url" value={form[k]} onChange={e=>set(k,e.target.value)} placeholder="https://" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab==='tasks' && (
+            <div>
+              <label style={{display:'block',fontSize:11.5,fontWeight:650,color:'var(--text-2)',marginBottom:8,textTransform:'uppercase',letterSpacing:'.03em'}}>
+                Remaining / Completed Tasks
+              </label>
+              {form.tasks.length===0 && <p style={{fontSize:12.5,color:'var(--text-2)'}}>No tasks yet — break the build into steps.</p>}
+              {form.tasks.map(t=>(
+                <div className="task-row" key={t.id}>
+                  <input type="checkbox" checked={t.done} onChange={()=>toggleTask(t.id)} />
+                  <span className={t.done?'done':''}>{t.text}</span>
+                  <button className="mini-x" onClick={()=>removeTask(t.id)}>✕</button>
+                </div>
+              ))}
+              <div className="add-task-row">
+                <input type="text" value={taskInput} onChange={e=>setTaskInput(e.target.value)}
+                  onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addTask();}}} placeholder="Add a task, press Enter" />
+                <button className="btn btn-ghost btn-sm" onClick={addTask}>Add</button>
+              </div>
+            </div>
+          )}
+
+          {tab==='notes' && (
+            <div className="field">
+              <label>Notes (Markdown supported)</label>
+              <textarea style={{minHeight:220}} value={form.notes} onChange={e=>set('notes',e.target.value)}
+                placeholder={"- [ ] checklist item\n- Regular note\n[a link](https://example.com)\n\`code\`"} />
+            </div>
+          )}
+        </div>
+        <div className="modal-foot">
+          {isEdit && !confirmDel && <button className="btn btn-danger" onClick={()=>setConfirmDel(true)}>Delete</button>}
+          {isEdit && confirmDel && (
+            <>
+              <span style={{fontSize:12.5,color:'var(--danger)',fontWeight:650}}>Delete permanently?</span>
+              <button className="btn btn-danger btn-sm" onClick={()=>onDelete(form.id)}>Yes, delete</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setConfirmDel(false)}>Cancel</button>
+            </>
+          )}
+          <div style={{flex:1}}></div>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={save}>{isEdit?'Save Changes':'Add Tool'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   COMMAND PALETTE
+========================================================================= */
+function CommandPalette({tools, onClose, onOpenTool, onNav, onNewTool}){
+  const [q,setQ] = useState('');
+  const inputRef = useRef(null);
+  useEffect(()=>{ setTimeout(()=>inputRef.current && inputRef.current.focus(),50); },[]);
+
+  const navItems = [
+    {label:'Go to Dashboard', icon:'🏠', action:()=>onNav('dashboard')},
+    {label:'Go to Grid View', icon:'▦', action:()=>onNav('grid')},
+    {label:'Go to Kanban Board', icon:'📋', action:()=>onNav('kanban')},
+    {label:'Go to Table View', icon:'☰', action:()=>onNav('table')},
+    {label:'Go to Calendar', icon:'🗓️', action:()=>onNav('calendar')},
+    {label:'Add New Tool', icon:'➕', action:onNewTool},
+  ];
+  const filteredNav = q ? navItems.filter(n=>n.label.toLowerCase().includes(q.toLowerCase())) : navItems;
+  const filteredTools = q ? tools.filter(t=>t.name.toLowerCase().includes(q.toLowerCase())).slice(0,8) : [];
+
+  return (
+    <div className="overlay" onMouseDown={(e)=>{if(e.target===e.currentTarget) onClose();}}>
+      <div className="modal cmdk">
+        <input ref={inputRef} value={q} onChange={e=>setQ(e.target.value)}
+          placeholder="Search tools or jump to a view…"
+          onKeyDown={e=>{if(e.key==='Escape') onClose();}} />
+        <div className="cmdk-list">
+          {filteredTools.map(t=>(
+            <div className="cmdk-item" key={t.id} onClick={()=>{onOpenTool(t); onClose();}}>
+              <span className="ic">{t.icon}</span>{t.name}<span className="cat">{t.category}</span>
+            </div>
+          ))}
+          {filteredTools.length>0 && <div className="nav-sep"></div>}
+          {filteredNav.map((n,i)=>(
+            <div className="cmdk-item" key={i} onClick={()=>{n.action(); onClose();}}>
+              <span className="ic">{n.icon}</span>{n.label}
+            </div>
+          ))}
+          {filteredNav.length===0 && filteredTools.length===0 && (
+            <div style={{padding:20,textAlign:'center',color:'var(--text-2)',fontSize:13}}>No matches</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShortcutsModal({onClose}){
+  const rows = [
+    ['New Tool','⌘/Ctrl + N'],
+    ['Command Palette','⌘/Ctrl + K'],
+    ['Focus Search','⌘/Ctrl + F'],
+    ['Shortcuts Help','⌘/Ctrl + /'],
+    ['Close Dialog','Esc'],
+  ];
+  return (
+    <div className="overlay" onMouseDown={(e)=>{if(e.target===e.currentTarget) onClose();}}>
+      <div className="modal small">
+        <div className="modal-head"><h3>Keyboard Shortcuts</h3><button className="modal-close" onClick={onClose}>✕</button></div>
+        <div className="modal-body">
+          <div className="shortcut-list">
+            {rows.map(([label,keys])=>(
+              <div className="sc-row" key={label}>
+                <span>{label}</span>
+                <div className="sc-keys">{keys.split(' + ').map((k,i)=><span className="kbd" key={i}>{k}</span>)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   ROOT APP
+========================================================================= */
+function App(){
+  const [tools,setTools] = useState([]);
+  const [loaded,setLoaded] = useState(false);
+  const [view,setView] = useState('dashboard');
+  const [theme,setTheme] = useState(()=> localStorageSafeGet('t52_theme') || 'auto');
+  const [search,setSearch] = useState('');
+  const [statusFilter,setStatusFilter] = useState('all');
+  const [catFilter,setCatFilter] = useState('all');
+  const [favOnly,setFavOnly] = useState(false);
+  const [editing,setEditing] = useState(null); // tool object or null
+  const [showAdd,setShowAdd] = useState(false);
+  const [showCmdK,setShowCmdK] = useState(false);
+  const [showShortcuts,setShowShortcuts] = useState(false);
+  const [toasts,setToasts] = useState([]);
+  const searchRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  function localStorageSafeGet(k){ try{ return null; }catch(e){ return null; } }
+
+  function pushToast(msg, icon){
+    const id = uid();
+    setToasts(t=>[...t,{id,msg,icon}]);
+    setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)), 2800);
+  }
+
+  // load from IndexedDB
+  useEffect(()=>{
+    (async ()=>{
+      try{
+        let data = await dbGetAll();
+        if(!data || data.length===0){
+          data = seedTools();
+          await dbBulkPut(data);
+        }
+        setTools(data);
+      }catch(e){
+        console.error('DB load failed', e);
+        setTools(seedTools());
+      }
+      setLoaded(true);
+    })();
+  },[]);
+
+  // theme application
+  useEffect(()=>{
+    const apply = ()=>{
+      let t = theme;
+      if(theme==='auto'){
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+    };
+    apply();
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const listener = ()=>{ if(theme==='auto') apply(); };
+    mq.addEventListener('change', listener);
+    return ()=>mq.removeEventListener('change', listener);
+  },[theme]);
+
+  function setThemeAndPersist(t){
+    setTheme(t);
+    try{ /* persisted in-memory only per session; avoided localStorage per platform constraints */ }catch(e){}
+  }
+
+  // keyboard shortcuts
+  useEffect(()=>{
+    function onKey(e){
+      const mod = e.metaKey || e.ctrlKey;
+      if(mod && e.key.toLowerCase()==='n'){ e.preventDefault(); setShowAdd(true); }
+      else if(mod && e.key.toLowerCase()==='k'){ e.preventDefault(); setShowCmdK(true); }
+      else if(mod && e.key.toLowerCase()==='f'){ e.preventDefault(); searchRef.current && searchRef.current.focus(); }
+      else if(mod && e.key==='/'){ e.preventDefault(); setShowShortcuts(true); }
+      else if(e.key==='Escape'){ setShowAdd(false); setEditing(null); setShowCmdK(false); setShowShortcuts(false); }
+    }
+    window.addEventListener('keydown', onKey);
+    return ()=>window.removeEventListener('keydown', onKey);
+  },[]);
+
+  async function saveTool(tool){
+    setTools(prev=>{
+      const exists = prev.some(t=>t.id===tool.id);
+      return exists ? prev.map(t=>t.id===tool.id?tool:t) : [tool,...prev];
+    });
+    await dbPut(tool);
+    pushToast(editing ? 'Changes saved' : 'Tool added', '✅');
+    setEditing(null); setShowAdd(false);
+  }
+
+  async function deleteTool(id){
+    setTools(prev=>prev.filter(t=>t.id!==id));
+    await dbDelete(id);
+    pushToast('Tool deleted', '🗑️');
+    setEditing(null);
+  }
+
+  async function bulkDelete(ids){
+    setTools(prev=>prev.filter(t=>!ids.includes(t.id)));
+    for(const id of ids) await dbDelete(id);
+    pushToast(ids.length + ' tools deleted', '🗑️');
+  }
+
+  async function bulkStatus(ids, status){
+    const now = Date.now();
+    setTools(prev=>prev.map(t=> ids.includes(t.id) ? {...t,status,updatedAt:now} : t));
+    const updated = tools.filter(t=>ids.includes(t.id)).map(t=>({...t,status,updatedAt:now}));
+    await dbBulkPut(updated);
+    pushToast('Status updated for '+ids.length+' tools', '✅');
+  }
+
+  async function toggleFav(tool){
+    const updated = {...tool, favorite:!tool.favorite, updatedAt:Date.now()};
+    setTools(prev=>prev.map(t=>t.id===tool.id?updated:t));
+    await dbPut(updated);
+  }
+
+  async function changeStatus(id, status){
+    const t = tools.find(x=>x.id===id);
+    if(!t || t.status===status) return;
+    const updated = {...t, status, updatedAt:Date.now(), progress: status==='live' ? 100 : t.progress};
+    setTools(prev=>prev.map(x=>x.id===id?updated:x));
+    await dbPut(updated);
+    pushToast(t.name+' → '+STATUS_MAP[status].label, '📋');
+  }
+
+  function exportJSON(){
+    const blob = new Blob([JSON.stringify(tools,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = '52-tools-manager-backup.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    pushToast('Exported to JSON', '📤');
+  }
+
+  function importJSON(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev)=>{
+      try{
+        const data = JSON.parse(ev.target.result);
+        if(!Array.isArray(data)) throw new Error('bad format');
+        const cleaned = data.map(t=>({...EMPTY_TOOL, ...t, id: t.id || uid()}));
+        await dbBulkPut(cleaned);
+        const all = await dbGetAll();
+        setTools(all);
+        pushToast('Imported '+cleaned.length+' tools', '📥');
+      }catch(err){
+        pushToast('Import failed — invalid JSON', '⚠️');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  const filtered = useMemo(()=>{
+    return tools.filter(t=>{
+      if(search && !(t.name.toLowerCase().includes(search.toLowerCase()) || (t.description||'').toLowerCase().includes(search.toLowerCase()) || (t.tags||[]).some(tag=>tag.toLowerCase().includes(search.toLowerCase())))) return false;
+      if(statusFilter!=='all' && t.status!==statusFilter) return false;
+      if(catFilter!=='all' && t.category!==catFilter) return false;
+      if(favOnly && !t.favorite) return false;
+      return true;
+    });
+  },[tools,search,statusFilter,catFilter,favOnly]);
+
+  const navList = [
+    {id:'dashboard', label:'Dashboard', icon:'🏠'},
+    {id:'grid', label:'Tools Grid', icon:'▦'},
+    {id:'kanban', label:'Kanban Board', icon:'📋'},
+    {id:'table', label:'Table View', icon:'☰'},
+    {id:'calendar', label:'Calendar', icon:'🗓️'},
+  ];
+
+  const titleMap = {dashboard:'Dashboard', grid:'Tools Grid', kanban:'Kanban Board', table:'Table View', calendar:'Calendar'};
+
+  if(!loaded){
+    return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',color:'var(--text-2)',fontSize:14}}>Loading your workspace…</div>;
+  }
+
+  return (
+    <div className="app">
+      <aside className="sidebar">
+        <div className="brand">
+          <div className="brand-mark">52</div>
+          <div className="brand-text"><b>Tools Manager</b><span>52 Tools Challenge</span></div>
+        </div>
+        <div className="nav-label">Views</div>
+        {navList.map(n=>(
+          <div key={n.id} className={"nav-item"+(view===n.id?' active':'')} onClick={()=>setView(n.id)}>
+            <span className="ic">{n.icon}</span>{n.label}
+          </div>
+        ))}
+        <div className="nav-sep"></div>
+        <div className="nav-label">Data</div>
+        <div className="nav-item" onClick={exportJSON}><span className="ic">📤</span>Export JSON</div>
+        <div className="nav-item" onClick={()=>fileInputRef.current.click()}><span className="ic">📥</span>Import JSON</div>
+        <input ref={fileInputRef} type="file" accept="application/json" style={{display:'none'}} onChange={importJSON} />
+
+        <div className="sidebar-foot">
+          <div className="theme-row">
+            {['light','dark','auto'].map(t=>(
+              <button key={t} className={"theme-btn"+(theme===t?' active':'')} onClick={()=>setThemeAndPersist(t)}>
+                {t[0].toUpperCase()+t.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </aside>
+
+      <div className="main">
+        <div className="topbar">
+          <span className="page-title">{titleMap[view]}</span>
+          <div className="search-wrap">
+            <span>⌕</span>
+            <input ref={searchRef} value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tools, tags, notes…" />
+            <span className="kbd">⌘F</span>
+          </div>
+          <div className="topbar-spacer"></div>
+          <button className="icon-btn" title="Command palette (⌘K)" onClick={()=>setShowCmdK(true)}>⌘</button>
+          <button className="icon-btn" title="Shortcuts (⌘/)" onClick={()=>setShowShortcuts(true)}>?</button>
+          <button className="btn btn-primary" onClick={()=>setShowAdd(true)}>+ Add Tool</button>
+        </div>
+
+        {(view==='grid' || view==='table') && (
+          <div style={{padding:'16px 28px 0'}}>
+            <div className="toolbar-row">
+              <div className={"chip"+(statusFilter==='all'?' active':'')} onClick={()=>setStatusFilter('all')}>All Status</div>
+              <select className="select-mini" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>
+                <option value="all">Status: All</option>
+                {STATUSES.map(s=><option value={s.id} key={s.id}>{s.label}</option>)}
+              </select>
+              <select className="select-mini" value={catFilter} onChange={e=>setCatFilter(e.target.value)}>
+                <option value="all">Category: All</option>
+                {CATEGORIES.map(c=><option key={c}>{c}</option>)}
+              </select>
+              <div className={"chip"+(favOnly?' active':'')} onClick={()=>setFavOnly(f=>!f)}>★ Favorites</div>
+              <div style={{flex:1}}></div>
+              <span style={{fontSize:12,color:'var(--text-2)'}}>{filtered.length} tool{filtered.length!==1?'s':''}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="content">
+          {view==='dashboard' && <Dashboard tools={tools} onOpen={setEditing} />}
+
+          {view==='grid' && (
+            filtered.length===0 ? (
+              <div className="empty view-fade">
+                <div className="em-ic">🧰</div>
+                <h4>No tools found</h4>
+                <p>Adjust your filters, or add your first tool to start the 52 Tools Challenge.</p>
+                <button className="btn btn-primary" onClick={()=>setShowAdd(true)}>+ Add Tool</button>
+              </div>
+            ) : (
+              <div className="tool-grid view-fade">
+                {filtered.map(t=><ToolCard key={t.id} tool={t} onOpen={setEditing} onToggleFav={toggleFav} />)}
+              </div>
+            )
+          )}
+
+          {view==='kanban' && <KanbanView tools={tools} onOpen={setEditing} onStatusChange={changeStatus} />}
+
+          {view==='table' && <TableView tools={filtered} onOpen={setEditing} onBulkDelete={bulkDelete} onBulkStatus={bulkStatus} />}
+
+          {view==='calendar' && <CalendarView tools={tools} onOpen={setEditing} />}
+        </div>
+      </div>
+
+      {(showAdd) && <ToolModal onClose={()=>setShowAdd(false)} onSave={saveTool} />}
+      {editing && <ToolModal initial={editing} onClose={()=>setEditing(null)} onSave={saveTool} onDelete={deleteTool} />}
+      {showCmdK && <CommandPalette tools={tools} onClose={()=>setShowCmdK(false)} onOpenTool={setEditing} onNav={setView} onNewTool={()=>setShowAdd(true)} />}
+      {showShortcuts && <ShortcutsModal onClose={()=>setShowShortcuts(false)} />}
+
+      <Toasts toasts={toasts} />
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
